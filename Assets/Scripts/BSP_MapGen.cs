@@ -21,7 +21,7 @@ public class BSP_MapGen : MonoBehaviour {
 	// Use this for initialization
 	void Start ()
     {
-
+        MapGen();
 		
 	}
 	
@@ -75,12 +75,35 @@ public class BSP_MapGen : MonoBehaviour {
         for (int i = 0; i < DIVIDE_COUNT; i++)
         {
             // Take last element of List
-            var temp = Map[Map.Count - 1];
+            var lastMapLevel = Map[Map.Count - 1];
 
+            List<List<Segment>> newLevel = new List<List<Segment>>();
             // Decide if cut virtically or horizontaly
             if (i % 2 == 1)
+            {
+                foreach (var segmentList in lastMapLevel)
+                {
+                    foreach (var segment in segmentList)
+                    {
+                        newLevel.Add(SplitSegmentHorizontal(segment));
+                    }
+                    
+                }
+            }
+            else
+            {
+                foreach (var segmentList in lastMapLevel)
+                {
+                    foreach (var segment in segmentList)
+                    {
+                        newLevel.Add(SplitSegmentVertical(segment));
+                    }
+                    
+                }
+            }
 
-            // 
+            // Add New Level to the Map
+            Map.Add(newLevel);
         }
 
 
