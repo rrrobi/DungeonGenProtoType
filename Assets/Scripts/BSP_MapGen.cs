@@ -117,10 +117,18 @@ public class BSP_MapGen : MonoBehaviour {
 
         #region Step 2 - Replace individual large segments with list of all small segments that space contains
 
+        foreach (var level in Map)
+        {
+            foreach (var segmentList in level)
+            {
+                var temp = FillSegmentList(segmentList[0]);
+                segmentList.RemoveAt(0);
+                segmentList.AddRange(temp);
+            }
+        }
+
         #endregion
     }
-
-
 
     private List<List<Segment>> SplitSegmentVertical(Segment input)
     {
@@ -195,6 +203,37 @@ public class BSP_MapGen : MonoBehaviour {
     private float RandomRatio()
     {
         return Random.Range(MIN_DIVIDE_RATION, MAX_DIVIDE_RATIO);
+    }
+
+    private List<Segment> FillSegmentList(Segment region)
+    {
+        List<Segment> output = new List<Segment>();
+        float regionLeft = region.xPos - region.width / 2;
+        float regionRight = region.xPos + region.width / 2;
+        float regionTop = region.yPos + region.height / 2;
+        float regionBottom = region.yPos - region.height / 2;
+
+        // For each segment created in the map
+        
+        //foreach (var level in Map)
+        //{
+            foreach (var segmentList in Map[Map.Count-1])
+            {
+                foreach (var segment in segmentList)
+                {
+                    // if the centre pos, is inside the given region
+                    // Add to the List
+                    if (segment.xPos > regionLeft && 
+                        segment.xPos < regionRight &&
+                        segment.yPos < regionTop && 
+                        segment.yPos > regionBottom)
+                    {
+                        output.Add(segment);
+                    }
+                }
+            }
+        //}
+        return output;
     }
 
     void Update()
