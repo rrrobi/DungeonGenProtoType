@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,12 +15,12 @@ public class BSP_MapGen : MonoBehaviour {
     }
 
     List<List<List<Segment>>> Map = new List<List<List<Segment>>>();
-    const float MAP_WIDTH = 10.0f;
-    const float MAP_HEIGHT = 10.0f;
+    const float MAP_WIDTH = 50.0f;
+    const float MAP_HEIGHT = 30.0f;
     const float MAX_DIVIDE_RATIO = 0.70f;
     const float MIN_DIVIDE_RATION = 0.30f;
 
-    const int DIVIDE_COUNT = 5;
+    const int DIVIDE_COUNT = 4;
 
     float drawCounter = 0;
     float counterTimeOut = 2.0f;
@@ -33,6 +34,8 @@ public class BSP_MapGen : MonoBehaviour {
 	
     void MapGen()
     {
+        DateTime before = DateTime.Now;
+
         // Map
         //      ________________
         //      |              |
@@ -61,7 +64,7 @@ public class BSP_MapGen : MonoBehaviour {
         //  ... and so on....
         
         // TODO.. Rethink this
-//        List<List<List<Segment>>> Map = new List<List<List<Segment>>>();
+        Map = new List<List<List<Segment>>>();
              List<List<Segment>> startLevel = new List<List<Segment>>();
                   List<Segment> root = new List<Segment>
         {
@@ -128,6 +131,15 @@ public class BSP_MapGen : MonoBehaviour {
         }
 
         #endregion
+
+        // Remove last Level in the List
+        // We don't need x lists of 1, 
+        // we already have 1 list of x in the first level
+        Map.RemoveAt(Map.Count - 1);
+
+        DateTime after = DateTime.Now;
+        TimeSpan duration = after.Subtract(before);
+        Debug.Log("Time taken to generate BSP map (ms): " + duration);
     }
 
     private List<List<Segment>> SplitSegmentVertical(Segment input)
@@ -202,7 +214,7 @@ public class BSP_MapGen : MonoBehaviour {
 
     private float RandomRatio()
     {
-        return Random.Range(MIN_DIVIDE_RATION, MAX_DIVIDE_RATIO);
+        return UnityEngine.Random.Range(MIN_DIVIDE_RATION, MAX_DIVIDE_RATIO);
     }
 
     private List<Segment> FillSegmentList(Segment region)
@@ -252,7 +264,7 @@ public class BSP_MapGen : MonoBehaviour {
         }
 
 
-        foreach (var segList in Map[drawIndex])
+        foreach (var segList in Map[0])
         {
             foreach (var segment in segList)
             {
