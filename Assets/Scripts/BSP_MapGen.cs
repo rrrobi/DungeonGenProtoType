@@ -24,7 +24,7 @@ public class BSP_MapGen : MonoBehaviour {
 
     float drawCounter = 0;
     float counterTimeOut = 2.0f;
-    int drawIndex = 0;
+  //  int drawIndex = 0;
 
     // Use this for initialization
     void Start ()
@@ -254,13 +254,13 @@ public class BSP_MapGen : MonoBehaviour {
         drawCounter += Time.deltaTime;
         if (drawCounter >= counterTimeOut)
         {
-            drawIndex++;
+            //drawIndex++;
             drawCounter = 0;
-            if (drawIndex >= Map.Count)
-            {
-                drawIndex = 0;
+            //if (drawIndex >= Map.Count)
+            //{
+            //    drawIndex = 0;
                 MapGen();
-            }
+            //}
         }
 
 
