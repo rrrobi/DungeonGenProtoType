@@ -14,13 +14,17 @@ public class BSP_MapGen : MonoBehaviour {
         public float height;
     }
 
-    List<List<List<Segment>>> Map = new List<List<List<Segment>>>();
+    List<List<List<Segment>>> BSPMap = new List<List<List<Segment>>>();
     const float MAP_WIDTH = 50.0f;
     const float MAP_HEIGHT = 30.0f;
     const float MAX_DIVIDE_RATIO = 0.70f;
     const float MIN_DIVIDE_RATION = 0.30f;
 
     const int DIVIDE_COUNT = 4;
+
+    // Map
+    public Sprite sampleFloor;
+    int[,] Map;
 
     float drawCounter = 0;
     float counterTimeOut = 2.0f;
@@ -64,7 +68,7 @@ public class BSP_MapGen : MonoBehaviour {
         //  ... and so on....
         
         // TODO.. Rethink this
-        Map = new List<List<List<Segment>>>();
+        BSPMap = new List<List<List<Segment>>>();
              List<List<Segment>> startLevel = new List<List<Segment>>();
                   List<Segment> root = new List<Segment>
         {
@@ -77,14 +81,14 @@ public class BSP_MapGen : MonoBehaviour {
             }
         };
         startLevel.Add(root);
-        Map.Add(startLevel);
+        BSPMap.Add(startLevel);
 
 
         #region Step 1 - Build List structure
         for (int i = 0; i < DIVIDE_COUNT; i++)
         {
             // Take last element of List
-            var lastMapLevel = Map[Map.Count - 1];
+            var lastMapLevel = BSPMap[BSPMap.Count - 1];
 
             List<List<Segment>> newLevel = new List<List<Segment>>();
             // Decide if cut virtically or horizontaly
@@ -112,7 +116,7 @@ public class BSP_MapGen : MonoBehaviour {
             }
 
             // Add New Level to the Map
-            Map.Add(newLevel);
+            BSPMap.Add(newLevel);
         }
 
 
@@ -120,7 +124,7 @@ public class BSP_MapGen : MonoBehaviour {
 
         #region Step 2 - Replace individual large segments with list of all small segments that space contains
 
-        foreach (var level in Map)
+        foreach (var level in BSPMap)
         {
             foreach (var segmentList in level)
             {
@@ -135,7 +139,11 @@ public class BSP_MapGen : MonoBehaviour {
         // Remove last Level in the List
         // We don't need x lists of 1, 
         // we already have 1 list of x in the first level
-        Map.RemoveAt(Map.Count - 1);
+        BSPMap.RemoveAt(BSPMap.Count - 1);
+
+
+        BuildTileMap();
+
 
         DateTime after = DateTime.Now;
         TimeSpan duration = after.Subtract(before);
@@ -229,7 +237,7 @@ public class BSP_MapGen : MonoBehaviour {
         
         //foreach (var level in Map)
         //{
-            foreach (var segmentList in Map[Map.Count-1])
+            foreach (var segmentList in BSPMap[BSPMap.Count-1])
             {
                 foreach (var segment in segmentList)
                 {
@@ -248,6 +256,71 @@ public class BSP_MapGen : MonoBehaviour {
         return output;
     }
 
+
+
+    #region I dont like this at all - Redo it
+    private void BuildTileMap()
+    {
+        // Reset Map
+        Map = new int[(int)MAP_WIDTH, (int)MAP_HEIGHT];
+        for (int x = 0; x < MAP_WIDTH; x++)
+        {
+            for (int y = 0; y < MAP_HEIGHT; y++)
+            {
+                Map[x, y] = 0;
+            }
+        }
+
+        foreach (var segment in BSPMap[0][0])
+        {
+            BuildRoomInSegment(segment);
+        }
+
+        DrawMap();
+    }
+
+    private void BuildRoomInSegment(Segment segment)
+    {
+        int left = (int)segment.xPos - (int)segment.width / 2;
+        int top = (int)segment.yPos + (int)segment.height / 2;
+
+        // max size of the room is width-1 x height-1
+        // This is because there must be enouigh space to have the wall all around the edge
+
+        // Min size of the room can be fixed to an arbituary 2x2, 
+        // Just to prevent tiny pointless rooms
+
+        // Not used yet
+        int roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
+        int roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
+
+        // Temp - Just makes a room 1 smaller than the full segment size each time.
+        // Adjust tile map array to include new room
+        for (int x = left+1; x < left + segment.width; x++)
+        {
+            for (int y = top+1; y < top - segment.height; y--)
+            {
+                Map[x, y] = 1;
+            }
+        }
+
+    }
+
+    private void DrawMap()
+    {
+        for (int x = 0; x < MAP_WIDTH; x++)
+        {
+            for (int y = 0; y < MAP_HEIGHT; y++)
+            {
+                GameObject tile = new GameObject();
+                tile.name = "Tile_" + x + "_" + y;
+                tile.transform.position = new Vector3(x, y);
+                tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
+            }
+        }
+    }
+    #endregion
+
     void Update()
     {
         
@@ -259,12 +332,12 @@ public class BSP_MapGen : MonoBehaviour {
             //if (drawIndex >= Map.Count)
             //{
             //    drawIndex = 0;
-                MapGen();
+            //    MapGen();
             //}
         }
 
 
-        foreach (var segList in Map[0])
+        foreach (var segList in BSPMap[0])
         {
             foreach (var segment in segList)
             {
