@@ -140,7 +140,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25df07f5231272a478b6721df9bc1ccf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sampleFloor: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
+  sampleFloor: {fileID: 21300000, guid: 9735b0857bcd02f44beac99472409781, type: 3}
+  sampleWall: {fileID: 21300000, guid: 0ab6546fae2056543af0ef9342d83062, type: 3}
 --- !u!4 &324377965
 Transform:
   m_ObjectHideFlags: 0

@@ -24,6 +24,7 @@ public class BSP_MapGen : MonoBehaviour {
 
     // Map
     public Sprite sampleFloor;
+    public Sprite sampleWall;
     int[,] Map;
 
     float drawCounter = 0;
@@ -298,9 +299,9 @@ public class BSP_MapGen : MonoBehaviour {
         // Adjust tile map array to include new room
         for (int x = left+1; x < left + segment.width; x++)
         {
-            for (int y = top+1; y < top - segment.height; y--)
+            for (int y = top-1; y > top - segment.height; y--)
             {
-                Map[x, y] = 1;
+                Map[x + ((int)MAP_WIDTH/2), y + ((int)MAP_HEIGHT/2)] = 1;
             }
         }
 
@@ -315,7 +316,10 @@ public class BSP_MapGen : MonoBehaviour {
                 GameObject tile = new GameObject();
                 tile.name = "Tile_" + x + "_" + y;
                 tile.transform.position = new Vector3(x, y);
-                tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
+                if (Map[x, y] == 0)
+                    tile.AddComponent<SpriteRenderer>().sprite = sampleWall;
+                if (Map[x,y] == 1)
+                    tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
             }
         }
     }
