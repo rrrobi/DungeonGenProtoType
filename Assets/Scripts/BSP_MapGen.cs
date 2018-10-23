@@ -164,7 +164,13 @@ public class BSP_MapGen : MonoBehaviour {
             // original center  
             // -Half Width  
             // +Half Ratio of original Full Width
-            xPos = input.xPos - (input.width / 2) + (input.width * (seg1Ratio / 2)),
+            //xPos = input.xPos - (input.width / 2) + (input.width * (seg1Ratio / 2)),
+            //yPos = input.yPos,
+
+            // Bottom left of new Left Segment = 
+            // xPos stays the same
+            // yPos stays the same
+            xPos = input.xPos,
             yPos = input.yPos,
             width = input.width * seg1Ratio,
             height = input.height
@@ -176,7 +182,13 @@ public class BSP_MapGen : MonoBehaviour {
             // original center  
             // +Half Width  
             // -Half Ratio of original Full Width
-            xPos = input.xPos + (input.width / 2) - (input.width * (seg2Ratio / 2)),
+            ////xPos = input.xPos + (input.width / 2) - (input.width * (seg2Ratio / 2)),
+            ////yPos = input.yPos,
+
+            // Bottom left of new Right Segment = 
+            // xPos = + width of left segment
+            // yPos stays the same
+            xPos = input.xPos + input.width * seg1Ratio,
             yPos = input.yPos,
             width = input.width * seg2Ratio,
             height = input.height
@@ -199,8 +211,14 @@ public class BSP_MapGen : MonoBehaviour {
             // original center  
             // +Half Hieght  
             // -Half Ratio of original Full Hieght
+            //xPos = input.xPos,
+            //yPos = input.yPos + (input.height / 2) - (input.height * (seg1Ratio / 2)),
+
+            // Bottom left of top segment = 
+            // xPos stays the same
+            // ypos = +height of BOTTOM segement
             xPos = input.xPos,
-            yPos = input.yPos + (input.height / 2) - (input.height * (seg1Ratio / 2)),
+            yPos = input.yPos + input.height * seg2Ratio,
             width = input.width,
             height = input.height * seg1Ratio
         };
@@ -211,8 +229,14 @@ public class BSP_MapGen : MonoBehaviour {
             // original center  
             // -Half Hieght  
             // +Half Ratio of original Full Hieght
+            //xPos = input.xPos,
+            //yPos = input.yPos - (input.height / 2) + (input.height * (seg2Ratio / 2)),
+
+            // Bottom Left of Bottom segment = 
+            // xPos stays the same
+            // yPos stays the same
             xPos = input.xPos,
-            yPos = input.yPos - (input.height / 2) + (input.height * (seg2Ratio / 2)),
+            yPos = input.yPos,
             width = input.width,
             height = input.height * seg2Ratio
         };
@@ -229,10 +253,10 @@ public class BSP_MapGen : MonoBehaviour {
     private List<Segment> FillSegmentList(Segment region)
     {
         List<Segment> output = new List<Segment>();
-        float regionLeft = region.xPos - region.width / 2;
-        float regionRight = region.xPos + region.width / 2;
-        float regionTop = region.yPos + region.height / 2;
-        float regionBottom = region.yPos - region.height / 2;
+        float regionLeft = region.xPos;// - region.width / 2;
+        float regionRight = region.xPos + region.width;// / 2;
+        float regionTop = region.yPos + region.height;// / 2;
+        float regionBottom = region.yPos;// - region.height / 2;
 
         // For each segment created in the map
         
@@ -242,12 +266,14 @@ public class BSP_MapGen : MonoBehaviour {
             {
                 foreach (var segment in segmentList)
                 {
+                float centerXPos = segment.xPos + segment.width / 2;
+                float centerYPos = segment.yPos + segment.height / 2;
                     // if the centre pos, is inside the given region
                     // Add to the List
-                    if (segment.xPos > regionLeft && 
-                        segment.xPos < regionRight &&
-                        segment.yPos < regionTop && 
-                        segment.yPos > regionBottom)
+                    if (centerXPos > regionLeft &&
+                        centerXPos < regionRight &&
+                        centerYPos < regionTop &&
+                        centerYPos > regionBottom)
                     {
                         output.Add(segment);
                     }
@@ -274,7 +300,7 @@ public class BSP_MapGen : MonoBehaviour {
 
         foreach (var segment in BSPMap[0][0])
         {
-            BuildRoomInSegment(segment);
+            //BuildRoomInSegment(segment);
         }
 
         DrawMap();
@@ -353,10 +379,10 @@ public class BSP_MapGen : MonoBehaviour {
 
     private void DrawSegment(Segment input)
     {
-        Vector3 topLeft = new Vector3(input.xPos - (input.width/2), input.yPos + (input.height/2), 0.0f);
-        Vector3 topRight = new Vector3(input.xPos + (input.width / 2), input.yPos + (input.height / 2), 0.0f);
-        Vector3 bottomLeft = new Vector3(input.xPos - (input.width / 2), input.yPos - (input.height / 2), 0.0f);
-        Vector3 bottomRight = new Vector3(input.xPos + (input.width / 2), input.yPos - (input.height / 2), 0.0f);
+        Vector3 topLeft = new Vector3(input.xPos, input.yPos + input.height, 0.0f);
+        Vector3 topRight = new Vector3(input.xPos + input.width, input.yPos + input.height, 0.0f);
+        Vector3 bottomLeft = new Vector3(input.xPos, input.yPos, 0.0f);
+        Vector3 bottomRight = new Vector3(input.xPos + input.width, input.yPos, 0.0f);
 
         Debug.DrawLine(topLeft, topRight);
         Debug.DrawLine(topRight, bottomRight);
