@@ -300,7 +300,7 @@ public class BSP_MapGen : MonoBehaviour {
 
         foreach (var segment in BSPMap[0][0])
         {
-            //BuildRoomInSegment(segment);
+            BuildRoomInSegment(segment);
         }
 
         DrawMap();
@@ -308,8 +308,8 @@ public class BSP_MapGen : MonoBehaviour {
 
     private void BuildRoomInSegment(Segment segment)
     {
-        int left = (int)segment.xPos - (int)segment.width / 2;
-        int top = (int)segment.yPos + (int)segment.height / 2;
+        int left = (int)segment.xPos;
+        int bottom = (int)segment.yPos;
 
         // max size of the room is width-1 x height-1
         // This is because there must be enouigh space to have the wall all around the edge
@@ -317,17 +317,19 @@ public class BSP_MapGen : MonoBehaviour {
         // Min size of the room can be fixed to an arbituary 2x2, 
         // Just to prevent tiny pointless rooms
 
-        // Not used yet
+        // Get random room size
         int roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
         int roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
+        // Get random room start pos - 
+        int roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (roomWidth + 1));
+        int roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (roomHeight + 1));
 
-        // Temp - Just makes a room 1 smaller than the full segment size each time.
         // Adjust tile map array to include new room
-        for (int x = left+1; x < left + segment.width; x++)
+        for (int x = roomLeft; x < roomLeft + roomWidth; x++)
         {
-            for (int y = top-1; y > top - segment.height; y--)
+            for (int y = roomBottom; y < roomBottom + roomHeight; y++)
             {
-                Map[x + ((int)MAP_WIDTH/2), y + ((int)MAP_HEIGHT/2)] = 1;
+                Map[x, y] = 1;
             }
         }
 
