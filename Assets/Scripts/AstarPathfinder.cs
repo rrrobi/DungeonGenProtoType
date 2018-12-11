@@ -74,6 +74,21 @@ public class AstarPathfinder : MonoBehaviour {
 
     }
 
+    public void ActivateSetTarget()
+    {
+        Debug.Log("Set target button clicked!");
+    }
+
+    public void DeactivateSetTaget()
+    {
+
+    }
+
+    public void StartPathfinder()
+    {
+        Debug.Log("start button clicked!");
+    }
+
     private void DrawMap()
     {
         for (int x = 0; x < MAP_WIDTH; x++)
