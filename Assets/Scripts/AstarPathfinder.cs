@@ -6,8 +6,8 @@ public class AstarPathfinder : MonoBehaviour {
 
     struct Tile
     {
-        int xPos;
-        int yPos;
+        public int xPos;
+        public int yPos;
     }
 
     // Temp variables
@@ -23,6 +23,8 @@ public class AstarPathfinder : MonoBehaviour {
     Tile StartTile;
     Tile TargetTile;
 
+    // Control variables
+    bool isSetTarget = false;
 
 	// Use this for initialization
 	void Start () {
@@ -36,7 +38,18 @@ public class AstarPathfinder : MonoBehaviour {
             }
         }
 
+        SetStart();
         DrawMap();
+    }
+
+    void SetStart()
+    {
+        // Hard code start to tile 1, 1 for now
+        Map[1, 1] = 2;
+
+        StartTile = new Tile();
+        StartTile.xPos = 1;
+        StartTile.yPos = 1;
     }
 	
 	// Update is called once per frame
@@ -66,7 +79,18 @@ public class AstarPathfinder : MonoBehaviour {
                 if (int.TryParse(hit.transform.name.Split('_')[2], out yIndex) == false)
                     Debug.Log("tile hit is not named as expected");
 
-                Map[xIndex, yIndex] = 2;
+                if (isSetTarget)
+                {
+                    Map[xIndex, yIndex] = 2;
+                    // Assign new target tile
+                    TargetTile.xPos = xIndex;
+                    TargetTile.yPos = yIndex;
+
+                    isSetTarget = false;
+                }
+                else
+                    Map[xIndex, yIndex] = 0;
+
 
                 DrawMap();
             }
@@ -77,6 +101,12 @@ public class AstarPathfinder : MonoBehaviour {
     public void ActivateSetTarget()
     {
         Debug.Log("Set target button clicked!");
+
+        // Reset current target
+        Map[TargetTile.xPos, TargetTile.yPos] = 1;
+
+        isSetTarget = true;
+        DrawMap();
     }
 
     public void DeactivateSetTaget()
