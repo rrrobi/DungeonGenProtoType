@@ -2,13 +2,29 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public class Node
+{
+    public int H_Value; // Heuristic - distance to target
+    public int G_Value; // Move cost
+    public int F_Value; // G + H
+    public Node Parent; // Node used to reach this node
+    public int xPos;
+    public int yPos;
+
+    public string Name { get { return xPos.ToString() + "_" + yPos.ToString(); } }
+}
+
 public class AstarPathfinder : MonoBehaviour {
 
-    struct Tile
-    {
-        public int xPos;
-        public int yPos;
-    }
+    //struct Node
+    //{
+    //    public int H_Value; // Heuristic - distance to target
+    //    public int G_Value; // Move cost
+    //    public int F_Value; // G + H
+    //    public Node Parent; // Node used to reach this node
+    //    public int xPos;
+    //    public int yPos;
+    //}
 
     // Temp variables
     int MAP_WIDTH = 10;
@@ -20,8 +36,11 @@ public class AstarPathfinder : MonoBehaviour {
     int[,] Map;
 
     // pathfinder variables
-    Tile StartTile;
-    Tile TargetTile;
+    Node StartNode;
+    Node TargetNode;
+
+    List<Node> openList = new List<Node>();
+    List<Node> closedList = new List<Node>();
 
     // Control variables
     bool isSetTarget = false;
@@ -45,11 +64,11 @@ public class AstarPathfinder : MonoBehaviour {
     void SetStart()
     {
         // Hard code start to tile 1, 1 for now
-        Map[1, 1] = 2;
+        Map[5, 1] = 2;
 
-        StartTile = new Tile();
-        StartTile.xPos = 1;
-        StartTile.yPos = 1;
+        StartNode = new Node();
+        StartNode.xPos = 5;
+        StartNode.yPos = 1;
     }
 	
 	// Update is called once per frame
@@ -83,8 +102,8 @@ public class AstarPathfinder : MonoBehaviour {
                 {
                     Map[xIndex, yIndex] = 2;
                     // Assign new target tile
-                    TargetTile.xPos = xIndex;
-                    TargetTile.yPos = yIndex;
+                    TargetNode.xPos = xIndex;
+                    TargetNode.yPos = yIndex;
 
                     isSetTarget = false;
                 }
@@ -103,7 +122,9 @@ public class AstarPathfinder : MonoBehaviour {
         Debug.Log("Set target button clicked!");
 
         // Reset current target
-        Map[TargetTile.xPos, TargetTile.yPos] = 1;
+        if (TargetNode != null)
+            Map[TargetNode.xPos, TargetNode.yPos] = 1;
+        TargetNode = new Node();
 
         isSetTarget = true;
         DrawMap();
@@ -117,6 +138,8 @@ public class AstarPathfinder : MonoBehaviour {
     public void StartPathfinder()
     {
         Debug.Log("start button clicked!");
+
+        Debug.Log("H value: " + FindHeuristic(StartNode, TargetNode));
     }
 
     private void DrawMap()
@@ -157,5 +180,21 @@ public class AstarPathfinder : MonoBehaviour {
             }
         }
     }
+
+    #region pathfinder methods
+    int FindHeuristic(Node start, Node target)
+    {
+        int startXIndex = start.xPos;
+        int startYIndex = start.yPos;
+
+        int targetXIndex = target.xPos;
+        int targetYIndex = target.yPos;
+
+        int H = Mathf.Abs(targetXIndex - startXIndex) + Mathf.Abs(targetYIndex - startYIndex);
+
+        return H;
+    }
+
+    #endregion
 
 }
