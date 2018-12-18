@@ -298,10 +298,11 @@ public class AstarPathfinder : MonoBehaviour {
         { }
         // If tile is impassable - Ignore
         /// TODO...
+        else if (Map[newNode.xPos, newNode.yPos] == 0)
+        { }          
         // If Node is the target - Break out, no need to keep looking
         else if (TargetNode.Name == newNode.Name)
         {
-            //TODO...
             TargetNode = newNode;
             return true;
         }
