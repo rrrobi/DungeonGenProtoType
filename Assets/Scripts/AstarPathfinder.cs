@@ -79,6 +79,8 @@ public class AstarPathfinder : MonoBehaviour {
 
     Dictionary<string, Node> openList = new Dictionary<string, Node>();
     List<Node> closedList = new List<Node>();
+    List<Node> path = new List<Node>();
+
 
     // Control variables
     bool isSetTarget = false;
@@ -136,6 +138,7 @@ public class AstarPathfinder : MonoBehaviour {
                 {
                     Map[xIndex, yIndex] = 2;
                     // Assign new target tile
+                    foundTarget = false;
                     TargetNode = new Node(xIndex, yIndex);
 
                     SetStart();
@@ -176,6 +179,8 @@ public class AstarPathfinder : MonoBehaviour {
         Debug.Log("start button clicked!");
 
         Debug.Log("Starting H value: " + StartNode.H_Value);
+        // reset current path
+        path = new List<Node>();
 
         // Add Start node to ClosedList
         AddToClosedList(StartNode);
@@ -199,6 +204,8 @@ public class AstarPathfinder : MonoBehaviour {
         }
 
         Debug.Log("Path found!");
+        BuildPath();
+
     }
 
     private void DrawMap()
@@ -317,6 +324,22 @@ public class AstarPathfinder : MonoBehaviour {
 
         // We have not yet found the target
         return false;
+    }
+
+    void BuildPath()
+    {
+        Node currentNode = TargetNode;
+        while(currentNode.Name != StartNode.Name)
+        {
+            path.Add(currentNode);
+            currentNode = currentNode.Parent;
+            Map[currentNode.xPos, currentNode.yPos] = 3;
+        }
+        // we have reached the start node
+        path.Add(StartNode);
+
+        // redraw map
+        DrawMap();
     }
 
     bool CheckForTargetNode(Node node)
