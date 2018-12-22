@@ -188,9 +188,9 @@ public class AstarPathfinder
 
     //}
 
-    public void StartPathfinder()
+    public List<Node> StartPathfinder()
     {
-        Debug.Log("start button clicked!");
+        Debug.Log("Pathfinder has begun");
 
         Debug.Log("Starting H value: " + StartNode.H_Value);
         // reset current path
@@ -220,6 +220,7 @@ public class AstarPathfinder
         Debug.Log("Path found!");
         BuildPath();
 
+        return path;
     }
 
     //private void DrawMap()
@@ -347,10 +348,12 @@ public class AstarPathfinder
         {
             path.Add(currentNode);
             currentNode = currentNode.Parent;
-            Map[currentNode.xPos, currentNode.yPos] = 3;
+ //           Map[currentNode.xPos, currentNode.yPos] = 3;
         }
         // we have reached the start node
         path.Add(StartNode);
+
+        path.Reverse();
 
         //// redraw map
         //DrawMap();

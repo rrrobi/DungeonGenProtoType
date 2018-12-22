@@ -311,15 +311,32 @@ public class BSP_MapGen : MonoBehaviour {
             }
         }
 
-        foreach (var segment in BSPMap[0][0])
+        // For each segment, make a randomly sized room (which fits within that segment)
+        // Update the Map with the new rooms
+        for (int i = 0; i < BSPMap[0][0].Count; i++)
         {
-            BuildRoomInSegment(segment);
+            Room room = new Room();
+            BuildRoomInSegment(BSPMap[0][0][i], out room);
+            room = BSPMap[0][0][i].segmentRoom = room;
         }
+        //foreach (var segment in BSPMap[0][0])
+        //{
+        //    BuildRoomInSegment(ref segment);
+        //}
+
+        // Take subset of total rooms (even number)
+        // Pair them up, find pathbetween them
+        // Weight tiles, 1 floor - 4ish wall, will prefer to cut through existing rooms, but still can cut new tunnels
+        FirstPassCorridorCreation();        // <-- Untested
+
+        // Loop through each room,
+        // Check it has a path to every other room
+        // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
 
         DrawMap();
     }
 
-    private void BuildRoomInSegment(Segment segment)
+    private void BuildRoomInSegment(Segment segment, out Room room)
     {
         int left = (int)segment.xPos;
         int bottom = (int)segment.yPos;
@@ -331,55 +348,13 @@ public class BSP_MapGen : MonoBehaviour {
         // Just to prevent tiny pointless rooms
 
         // Get random room size
-        Room room = new Room();
+        room = new Room();
         room.roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
         room.roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
         // Get random room start pos - 
         room.roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (room.roomWidth + 1));
         room.roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (room.roomHeight + 1));
-        // Add randomly placed doors
-        int marker = UnityEngine.Random.Range(1, 12);
-        room.roomDoors = new List<Vector2Int>();
-        if (marker % 4 == 1)
-        {
-            // 1, door is on top side
-            int doorX = UnityEngine.Random.Range(room.roomLeft, room.roomLeft + room.roomWidth);
-            int doorY = room.roomBottom + room.roomHeight;
-            Vector2Int temp = new Vector2Int(doorX, doorY);
-            room.roomDoors.Add(temp);
-        }
-        else if (marker % 4 == 2)
-        {
-            // 2, door is on bottom side
-            int doorX = UnityEngine.Random.Range(room.roomLeft, room.roomLeft + room.roomWidth);
-            int doorY = room.roomBottom - 1;
-            Vector2Int temp = new Vector2Int(doorX, doorY);
-            room.roomDoors.Add(temp);
-        }
-        else if (marker % 4 == 3)
-        {
-            // 3, door is on left side
-            int doorX = room.roomLeft - 1;
-            int doorY = UnityEngine.Random.Range(room.roomBottom, room.roomBottom + room.roomHeight);
-            Vector2Int temp = new Vector2Int(doorX, doorY);
-            room.roomDoors.Add(temp);
-        }
-        else if (marker % 4 == 0)
-        {
-            // 0, door is on right side
-            int doorX = room.roomLeft + room.roomWidth;
-            int doorY = UnityEngine.Random.Range(room.roomBottom, room.roomBottom + room.roomHeight);
-            Vector2Int temp = new Vector2Int(doorX, doorY);
-            room.roomDoors.Add(temp);
-        }
-
-        segment.segmentRoom = room;        
-
-        //int roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
-        //int roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
-        //// Get random room start pos - 
-        //int roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (roomWidth + 1));
-        //int roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (roomHeight + 1));
+        //segment.segmentRoom = room;        
 
         // Adjust tile map array to include new room
         for (int x = room.roomLeft; x < room.roomLeft + room.roomWidth; x++)
@@ -389,13 +364,49 @@ public class BSP_MapGen : MonoBehaviour {
                 Map[x, y] = 1;
             }
         }
+    }
 
-        // Adjust tile map to display doors
-        foreach (var door in room.roomDoors)
+    private void FirstPassCorridorCreation()
+    {
+        // Get List of Random indices for segments to use
+        // Roughly half the total
+        // Make sure it is a even number
+        List<int> segmentIndices = new List<int>();
+        int maxIndex = BSPMap[0][0].Count;
+        while (segmentIndices.Count < (BSPMap[0][0].Count / 2) ||
+            segmentIndices.Count % 2 != 0)
         {
-            Map[door.x, door.y] = 2;
+            int index = UnityEngine.Random.Range(0, maxIndex);
+            if (!segmentIndices.Contains(index))
+            {
+                segmentIndices.Add(index);
+            }
         }
+        // loop through randomly selected segments
+        for (int i = 0; i < segmentIndices.Count; i += 2)
+        {
+            // Start node will be in BSPMap[0][0][i]
+            Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][i]);
+            // Target node will be in BSPMap[0][0][i + 1]
+            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][i + 1]);
 
+            AstarPathfinder pathfinder = new AstarPathfinder(Map, startNode, targetNode);
+            List<Node> path = pathfinder.StartPathfinder();
+            foreach (var node in path)
+            {
+                Map[node.xPos, node.yPos] = 1;
+            }
+
+        }
+    }
+
+    private Vector2Int GetRandomPointInRoom(Segment segment)
+    {
+        Vector2Int output = new Vector2Int();
+        output.x = UnityEngine.Random.Range(segment.segmentRoom.roomLeft, segment.segmentRoom.roomLeft + segment.segmentRoom.roomWidth);
+        output.y = UnityEngine.Random.Range(segment.segmentRoom.roomBottom, segment.segmentRoom.roomBottom + segment.segmentRoom.roomHeight);
+
+        return output;
     }
 
     private void DrawMap()
