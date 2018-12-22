@@ -203,7 +203,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &297683519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -215,10 +215,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3bc533b637c64540921cf7a752375cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sampleFloor: {fileID: 21300000, guid: 9735b0857bcd02f44beac99472409781, type: 3}
-  sampleBlueFloor: {fileID: 21300000, guid: 58e0fe6999f76de44af405f35b30c5f1, type: 3}
-  sampleGreenFloor: {fileID: 21300000, guid: ca7479dc703954c49bf672ad4eb008e7, type: 3}
-  sampleWall: {fileID: 21300000, guid: 0ab6546fae2056543af0ef9342d83062, type: 3}
 --- !u!4 &297683520
 Transform:
   m_ObjectHideFlags: 0
@@ -247,7 +243,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &324377964
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,6 +256,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampleFloor: {fileID: 21300000, guid: 9735b0857bcd02f44beac99472409781, type: 3}
+  sampleDoor: {fileID: 21300000, guid: ca7479dc703954c49bf672ad4eb008e7, type: 3}
   sampleWall: {fileID: 21300000, guid: 0ab6546fae2056543af0ef9342d83062, type: 3}
 --- !u!4 &324377965
 Transform:

@@ -12,6 +12,18 @@ public class BSP_MapGen : MonoBehaviour {
         public float yPos;
         public float width;
         public float height;
+
+        public Room segmentRoom;
+    }
+
+    public struct Room
+    {
+        public int roomWidth;
+        public int roomHeight;
+        public int roomLeft;
+        public int roomBottom;
+
+        public List<Vector2Int> roomDoors;
     }
 
     List<List<List<Segment>>> BSPMap = new List<List<List<Segment>>>();
@@ -24,6 +36,7 @@ public class BSP_MapGen : MonoBehaviour {
 
     // Map
     public Sprite sampleFloor;
+    public Sprite sampleDoor;
     public Sprite sampleWall;
     int[,] Map;
 
@@ -318,19 +331,69 @@ public class BSP_MapGen : MonoBehaviour {
         // Just to prevent tiny pointless rooms
 
         // Get random room size
-        int roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
-        int roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
+        Room room = new Room();
+        room.roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
+        room.roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
         // Get random room start pos - 
-        int roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (roomWidth + 1));
-        int roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (roomHeight + 1));
+        room.roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (room.roomWidth + 1));
+        room.roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (room.roomHeight + 1));
+        // Add randomly placed doors
+        int marker = UnityEngine.Random.Range(1, 12);
+        room.roomDoors = new List<Vector2Int>();
+        if (marker % 4 == 1)
+        {
+            // 1, door is on top side
+            int doorX = UnityEngine.Random.Range(room.roomLeft, room.roomLeft + room.roomWidth);
+            int doorY = room.roomBottom + room.roomHeight;
+            Vector2Int temp = new Vector2Int(doorX, doorY);
+            room.roomDoors.Add(temp);
+        }
+        else if (marker % 4 == 2)
+        {
+            // 2, door is on bottom side
+            int doorX = UnityEngine.Random.Range(room.roomLeft, room.roomLeft + room.roomWidth);
+            int doorY = room.roomBottom - 1;
+            Vector2Int temp = new Vector2Int(doorX, doorY);
+            room.roomDoors.Add(temp);
+        }
+        else if (marker % 4 == 3)
+        {
+            // 3, door is on left side
+            int doorX = room.roomLeft - 1;
+            int doorY = UnityEngine.Random.Range(room.roomBottom, room.roomBottom + room.roomHeight);
+            Vector2Int temp = new Vector2Int(doorX, doorY);
+            room.roomDoors.Add(temp);
+        }
+        else if (marker % 4 == 0)
+        {
+            // 0, door is on right side
+            int doorX = room.roomLeft + room.roomWidth;
+            int doorY = UnityEngine.Random.Range(room.roomBottom, room.roomBottom + room.roomHeight);
+            Vector2Int temp = new Vector2Int(doorX, doorY);
+            room.roomDoors.Add(temp);
+        }
+
+        segment.segmentRoom = room;        
+
+        //int roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
+        //int roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
+        //// Get random room start pos - 
+        //int roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (roomWidth + 1));
+        //int roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (roomHeight + 1));
 
         // Adjust tile map array to include new room
-        for (int x = roomLeft; x < roomLeft + roomWidth; x++)
+        for (int x = room.roomLeft; x < room.roomLeft + room.roomWidth; x++)
         {
-            for (int y = roomBottom; y < roomBottom + roomHeight; y++)
+            for (int y = room.roomBottom; y < room.roomBottom + room.roomHeight; y++)
             {
                 Map[x, y] = 1;
             }
+        }
+
+        // Adjust tile map to display doors
+        foreach (var door in room.roomDoors)
+        {
+            Map[door.x, door.y] = 2;
         }
 
     }
@@ -346,8 +409,10 @@ public class BSP_MapGen : MonoBehaviour {
                 tile.transform.position = new Vector3(x, y);
                 if (Map[x, y] == 0)
                     tile.AddComponent<SpriteRenderer>().sprite = sampleWall;
-                if (Map[x,y] == 1)
+                else if (Map[x,y] == 1)
                     tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
+                else if (Map[x, y] == 2)
+                    tile.AddComponent<SpriteRenderer>().sprite = sampleDoor;
             }
         }
     }

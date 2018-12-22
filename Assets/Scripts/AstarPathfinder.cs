@@ -112,81 +112,81 @@ public class AstarPathfinder
     //    DrawMap();
     //}
 
-    void SetStart()
-    {
-        // Hard code start to tile 1, 1 for now
-        Map[5, 1] = 2;
+    //void SetStart()
+    //{
+    //    // Hard code start to tile 1, 1 for now
+    //    Map[5, 1] = 2;
 
-        StartNode = new Node(5, 1, TargetNode);
-    }
+    //    StartNode = new Node(5, 1, TargetNode);
+    //}
 
     // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-            OnTouch();
-    }
+    //void Update()
+    //{
+    //    if (Input.GetMouseButtonDown(0))
+    //        OnTouch();
+    //}
 
-    void OnTouch()
-    {
-        Debug.Log("Mouse Clicked!");
-        Vector2 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
+    //void OnTouch()
+    //{
+    //    Debug.Log("Mouse Clicked!");
+    //    Vector2 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    //    RaycastHit2D hit = Physics2D.Raycast(worldPoint, Vector2.zero);
 
-        if (hit)
-        {
-            Debug.Log("Clicked on: " + hit.transform.name);
-            if (hit.transform.name.Contains("Tile"))
-            {
-                int xIndex;
-                int yIndex;
+    //    if (hit)
+    //    {
+    //        Debug.Log("Clicked on: " + hit.transform.name);
+    //        if (hit.transform.name.Contains("Tile"))
+    //        {
+    //            int xIndex;
+    //            int yIndex;
 
-                string x = hit.transform.name.Split('_')[1];
-                string y = hit.transform.name.Split('_')[2];
-                if (int.TryParse(hit.transform.name.Split('_')[1], out xIndex) == false)
-                    Debug.Log("tile hit is not named as expected");
-                if (int.TryParse(hit.transform.name.Split('_')[2], out yIndex) == false)
-                    Debug.Log("tile hit is not named as expected");
+    //            string x = hit.transform.name.Split('_')[1];
+    //            string y = hit.transform.name.Split('_')[2];
+    //            if (int.TryParse(hit.transform.name.Split('_')[1], out xIndex) == false)
+    //                Debug.Log("tile hit is not named as expected");
+    //            if (int.TryParse(hit.transform.name.Split('_')[2], out yIndex) == false)
+    //                Debug.Log("tile hit is not named as expected");
 
-                if (isSetTarget)
-                {
-                    Map[xIndex, yIndex] = 2;
-                    // Assign new target tile
-                    foundTarget = false;
-                    TargetNode = new Node(xIndex, yIndex);
+    //            if (isSetTarget)
+    //            {
+    //                Map[xIndex, yIndex] = 2;
+    //                // Assign new target tile
+    //                foundTarget = false;
+    //                TargetNode = new Node(xIndex, yIndex);
 
-                    SetStart();
-                    isSetTarget = false;
-                }
-                else
-                    Map[xIndex, yIndex] = 0;
+    //                SetStart();
+    //                isSetTarget = false;
+    //            }
+    //            else
+    //                Map[xIndex, yIndex] = 0;
 
 
-                DrawMap();
-            }
-        }
+    //            DrawMap();
+    //        }
+    //    }
 
-    }
+    //}
 
-    public void ActivateSetTarget()
-    {
-        Debug.Log("Set target button clicked!");
+    //public void ActivateSetTarget()
+    //{
+    //    Debug.Log("Set target button clicked!");
 
-        // Reset current target
-        if (TargetNode != null)
-        {
-            Map[TargetNode.xPos, TargetNode.yPos] = 1;
-            TargetNode = null;
-        }
+    //    // Reset current target
+    //    if (TargetNode != null)
+    //    {
+    //        Map[TargetNode.xPos, TargetNode.yPos] = 1;
+    //        TargetNode = null;
+    //    }
 
-        isSetTarget = true;
-        DrawMap();
-    }
+    //    isSetTarget = true;
+    //    DrawMap();
+    //}
 
-    public void DeactivateSetTarget()
-    {
+    //public void DeactivateSetTarget()
+    //{
 
-    }
+    //}
 
     public void StartPathfinder()
     {
@@ -222,44 +222,44 @@ public class AstarPathfinder
 
     }
 
-    private void DrawMap()
-    {
-        for (int x = 0; x < MAP_WIDTH; x++)
-        {
-            for (int y = 0; y < MAP_HEIGHT; y++)
-            {
-                GameObject tile;
-                string name = "Tile_" + x + "_" + y;
-                if (GameObject.Find(name) == null)
-                {
-                    tile = new GameObject();
-                    tile.name = name;
-                    tile.transform.position = new Vector3(x, y);
-                    tile.AddComponent<BoxCollider2D>().offset = new Vector2(0.5f, 0.5f);
-                    if (Map[x, y] == 0)
-                        tile.AddComponent<SpriteRenderer>().sprite = sampleWall;
-                    if (Map[x, y] == 1)
-                        tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
-                    if (Map[x, y] == 2)
-                        tile.AddComponent<SpriteRenderer>().sprite = sampleBlueFloor;
-                    if (Map[x, y] == 3)
-                        tile.AddComponent<SpriteRenderer>().sprite = sampleGreenFloor;
-                }
-                else
-                {
-                    tile = GameObject.Find(name);
-                    if (Map[x, y] == 0)
-                        tile.GetComponent<SpriteRenderer>().sprite = sampleWall;
-                    if (Map[x, y] == 1)
-                        tile.GetComponent<SpriteRenderer>().sprite = sampleFloor;
-                    if (Map[x, y] == 2)
-                        tile.GetComponent<SpriteRenderer>().sprite = sampleBlueFloor;
-                    if (Map[x, y] == 3)
-                        tile.GetComponent<SpriteRenderer>().sprite = sampleGreenFloor;
-                }
-            }
-        }
-    }
+    //private void DrawMap()
+    //{
+    //    for (int x = 0; x < MAP_WIDTH; x++)
+    //    {
+    //        for (int y = 0; y < MAP_HEIGHT; y++)
+    //        {
+    //            GameObject tile;
+    //            string name = "Tile_" + x + "_" + y;
+    //            if (GameObject.Find(name) == null)
+    //            {
+    //                tile = new GameObject();
+    //                tile.name = name;
+    //                tile.transform.position = new Vector3(x, y);
+    //                tile.AddComponent<BoxCollider2D>().offset = new Vector2(0.5f, 0.5f);
+    //                if (Map[x, y] == 0)
+    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleWall;
+    //                if (Map[x, y] == 1)
+    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
+    //                if (Map[x, y] == 2)
+    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleBlueFloor;
+    //                if (Map[x, y] == 3)
+    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleGreenFloor;
+    //            }
+    //            else
+    //            {
+    //                tile = GameObject.Find(name);
+    //                if (Map[x, y] == 0)
+    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleWall;
+    //                if (Map[x, y] == 1)
+    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleFloor;
+    //                if (Map[x, y] == 2)
+    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleBlueFloor;
+    //                if (Map[x, y] == 3)
+    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleGreenFloor;
+    //            }
+    //        }
+    //    }
+    //}
 
     #region pathfinder methods
 
@@ -352,8 +352,8 @@ public class AstarPathfinder
         // we have reached the start node
         path.Add(StartNode);
 
-        // redraw map
-        DrawMap();
+        //// redraw map
+        //DrawMap();
     }
 
     bool CheckForTargetNode(Node node)
