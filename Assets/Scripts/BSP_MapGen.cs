@@ -13,6 +13,7 @@ public class BSP_MapGen : MonoBehaviour {
         public float width;
         public float height;
 
+        public string segmentKey;
         public Room segmentRoom;
     }
 
@@ -91,7 +92,9 @@ public class BSP_MapGen : MonoBehaviour {
                 xPos = 0.0f,
                 yPos = 0.0f,
                 width = MAP_WIDTH,
-                height = MAP_HEIGHT
+                height = MAP_HEIGHT,
+
+                segmentKey = "BASE"
             }
         };
         startLevel.Add(root);
@@ -164,6 +167,16 @@ public class BSP_MapGen : MonoBehaviour {
         Debug.Log("Time taken to generate BSP map (ms): " + duration);
     }
 
+    private string GetNewKey(string inputKey)
+    {
+        string output = string.Empty;
+
+        // If input is base, 
+
+
+        return output;
+    }
+
     private List<List<Segment>> SplitSegmentVertical(Segment input)
     {
         List<List<Segment>> output = new List<List<Segment>>();
@@ -233,7 +246,8 @@ public class BSP_MapGen : MonoBehaviour {
             xPos = input.xPos,
             yPos = input.yPos + input.height * seg2Ratio,
             width = input.width,
-            height = input.height * seg1Ratio
+            height = input.height * seg1Ratio,
+
         };
         output.Add(new List<Segment>() { segment1 });
         Segment segment2 = new Segment()
@@ -315,28 +329,25 @@ public class BSP_MapGen : MonoBehaviour {
         // Update the Map with the new rooms
         for (int i = 0; i < BSPMap[0][0].Count; i++)
         {
-            Room room = new Room();
-            BuildRoomInSegment(BSPMap[0][0][i], out room);
-            room = BSPMap[0][0][i].segmentRoom = room;
+            // have to 'replace' segment in question with a copy iincluding the room information, 
+            // unsure why I was unable to simply amend the 'Room' property
+            BSPMap[0][0][i] = BuildRoomInSegment(BSPMap[0][0][i]);            
         }
-        //foreach (var segment in BSPMap[0][0])
-        //{
-        //    BuildRoomInSegment(ref segment);
-        //}
 
         // Take subset of total rooms (even number)
         // Pair them up, find pathbetween them
         // Weight tiles, 1 floor - 4ish wall, will prefer to cut through existing rooms, but still can cut new tunnels
-        FirstPassCorridorCreation();        // <-- Untested
+        FirstPassCorridorCreation();
 
         // Loop through each room,
         // Check it has a path to every other room
         // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
+        //SecondPassCorridorCreation(); <-- Still working on this
 
         DrawMap();
     }
 
-    private void BuildRoomInSegment(Segment segment, out Room room)
+    private Segment BuildRoomInSegment(Segment segment)
     {
         int left = (int)segment.xPos;
         int bottom = (int)segment.yPos;
@@ -348,13 +359,13 @@ public class BSP_MapGen : MonoBehaviour {
         // Just to prevent tiny pointless rooms
 
         // Get random room size
-        room = new Room();
+        Room room = new Room();
         room.roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
         room.roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
         // Get random room start pos - 
         room.roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (room.roomWidth + 1));
         room.roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (room.roomHeight + 1));
-        //segment.segmentRoom = room;        
+        segment.segmentRoom = room;
 
         // Adjust tile map array to include new room
         for (int x = room.roomLeft; x < room.roomLeft + room.roomWidth; x++)
@@ -364,6 +375,8 @@ public class BSP_MapGen : MonoBehaviour {
                 Map[x, y] = 1;
             }
         }
+
+        return segment;
     }
 
     private void FirstPassCorridorCreation()
@@ -373,7 +386,7 @@ public class BSP_MapGen : MonoBehaviour {
         // Make sure it is a even number
         List<int> segmentIndices = new List<int>();
         int maxIndex = BSPMap[0][0].Count;
-        while (segmentIndices.Count < (BSPMap[0][0].Count / 2) ||
+        while (segmentIndices.Count < (BSPMap[0][0].Count) ||
             segmentIndices.Count % 2 != 0)
         {
             int index = UnityEngine.Random.Range(0, maxIndex);
@@ -382,21 +395,57 @@ public class BSP_MapGen : MonoBehaviour {
                 segmentIndices.Add(index);
             }
         }
+
+        List<int> impassableList = new List<int>();
+        Dictionary<int, int> costModList = new Dictionary<int, int>();
+        costModList.Add(0, 40);
+        costModList.Add(1, 10);
+        costModList.Add(2, 10);
+        AstarPathfinder pathfinder = new AstarPathfinder(Map, costModList, impassableList);
         // loop through randomly selected segments
         for (int i = 0; i < segmentIndices.Count; i += 2)
         {
             // Start node will be in BSPMap[0][0][i]
-            Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][i]);
+            Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i]]);
             // Target node will be in BSPMap[0][0][i + 1]
-            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][i + 1]);
-
-            AstarPathfinder pathfinder = new AstarPathfinder(Map, startNode, targetNode);
-            List<Node> path = pathfinder.StartPathfinder();
+            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i+1]]);            
+            
+            List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
             {
-                Map[node.xPos, node.yPos] = 1;
+                Map[node.xPos, node.yPos] = 2;
             }
 
+        }
+    }
+
+    private void SecondPassCorridorCreation()
+    {
+        List<int> impassableList = new List<int>();
+        Dictionary<int, int> costModList = new Dictionary<int, int>();
+        costModList.Add(0, 1000);
+        costModList.Add(1, 10);
+        costModList.Add(2, 10);
+        AstarPathfinder pathfinder = new AstarPathfinder(Map, costModList, impassableList);
+
+        // loop through all Segments
+        for (int i = 0; i < BSPMap[0][0].Count; i++)
+        {
+            for (int j = 0; j < BSPMap[0][0].Count; j++)
+            {
+                // Nothting to doo if i and j both point to the same segment
+                if (i == j)
+                    continue;
+
+                Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][i]);
+                Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][j]);                
+                
+                List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
+                foreach (var node in path)
+                {
+                    Map[node.xPos, node.yPos] = 2;
+                }
+            }          
         }
     }
 

@@ -73,6 +73,8 @@ public class AstarPathfinder
     // pathfinder variables
     Node StartNode;
     Node TargetNode;
+    List<int> ImpassableList;
+    Dictionary<int, int> CostModList;
 
     bool foundTarget = false;
     int baseMoveCost = 10;
@@ -87,14 +89,13 @@ public class AstarPathfinder
     bool isSetTarget = false;
 
     public AstarPathfinder(int[,] map, 
-        Vector2Int startIndex, Vector2Int targetIndex)
+        Dictionary<int, int> costModList, List<int> impassable)
     {
         Map = map;
         MAP_WIDTH = map.GetLength(0);
         MAP_HEIGHT = map.GetLength(1);
-
-        TargetNode = new Node(targetIndex.x, targetIndex.y);
-        StartNode = new Node(startIndex.x, startIndex.y, TargetNode);
+        CostModList = costModList;
+        ImpassableList = impassable;
     }
 
     //// Use this for initialization
@@ -188,8 +189,15 @@ public class AstarPathfinder
 
     //}
 
-    public List<Node> StartPathfinder()
+    public List<Node> StartPathfinder(Vector2Int startIndex, Vector2Int targetIndex)
     {
+        // Reset pathfinder
+        foundTarget = false;
+        closedList = new List<Node>();
+        openList = new Dictionary<string, Node>();
+        TargetNode = new Node(targetIndex.x, targetIndex.y);
+        StartNode = new Node(startIndex.x, startIndex.y, TargetNode);
+
         Debug.Log("Pathfinder has begun");
 
         Debug.Log("Starting H value: " + StartNode.H_Value);
@@ -270,49 +278,66 @@ public class AstarPathfinder
         int newX = parent.xPos;
         int newY = parent.yPos;
 
+        Node newNode;
         // Check Left
         ///////////////
         // Get pos
         newX = parent.xPos - 1;
         newY = parent.yPos;
-        Node newNode = new Node(newX, newY, TargetNode, baseMoveCost, parent);
-        if (CheckNode(newNode))
-        { foundTarget = true; }
+        if (IsNodeInMap(newX, newY))
+        {
+            newNode = new Node(newX, newY, TargetNode, CostModList[Map[newX, newY]], parent);
+            if (CheckNode(newNode))
+            { foundTarget = true; }
+        }
         // Check Right
         ///////////////
         // Get pos
         newX = parent.xPos + 1;
         newY = parent.yPos;
-        newNode = new Node(newX, newY, TargetNode, baseMoveCost, parent);
-        if (CheckNode(newNode))
-        { foundTarget = true; }
+        if (IsNodeInMap(newX, newY))
+        {
+            newNode = new Node(newX, newY, TargetNode, CostModList[Map[newX, newY]], parent);
+            if (CheckNode(newNode))
+            { foundTarget = true; }
+        }        
         // Check Up
         ///////////////
         // Get pos
         newX = parent.xPos;
         newY = parent.yPos + 1;
-        newNode = new Node(newX, newY, TargetNode, baseMoveCost, parent);
-        if (CheckNode(newNode))
-        { foundTarget = true; }
+        if (IsNodeInMap(newX, newY))
+        {
+            newNode = new Node(newX, newY, TargetNode, CostModList[Map[newX, newY]], parent);
+            if (CheckNode(newNode))
+            { foundTarget = true; }
+        }
         // Check Down
         ///////////////
         // Get pos
         newX = parent.xPos;
         newY = parent.yPos - 1;
-        newNode = new Node(newX, newY, TargetNode, baseMoveCost, parent);
-        if (CheckNode(newNode))
-        { foundTarget = true; }
+        if (IsNodeInMap(newX, newY))
+        {
+            newNode = new Node(newX, newY, TargetNode, CostModList[Map[newX, newY]], parent);
+            if (CheckNode(newNode))
+            { foundTarget = true; }
+        }
+    }
 
+    bool IsNodeInMap(int x, int y)
+    {
+        if (x < 0 || x >= MAP_WIDTH ||
+            y < 0 || y >= MAP_HEIGHT)
+            return false;
+
+        return true;
     }
 
     bool CheckNode(Node newNode)
     {
-        // If tile doesn't exist - Ignore
-        if (newNode.xPos < 0 || newNode.xPos >= MAP_WIDTH ||
-            newNode.yPos < 0 || newNode.yPos >= MAP_HEIGHT)
-        { }
         // If tile is impassable - Ignore
-        else if (Map[newNode.xPos, newNode.yPos] == 0)
+        if (ImpassableList.Contains(Map[newNode.xPos, newNode.yPos]))
         { }
         // If Node is the target - Break out, no need to keep looking
         else if (TargetNode.Name == newNode.Name)
