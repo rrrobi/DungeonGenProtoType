@@ -339,10 +339,10 @@ public class BSP_MapGen : MonoBehaviour {
         // Weight tiles, 1 floor - 4ish wall, will prefer to cut through existing rooms, but still can cut new tunnels
         FirstPassCorridorCreation();
 
-        // Loop through each room,
+        // Place Entrance in on random tile in random room
         // Check it has a path to every other room
         // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
-        //SecondPassCorridorCreation(); <-- Still working on this
+        SecondPassCorridorCreation(); //<-- Still working on this
 
         DrawMap();
     }
@@ -428,24 +428,23 @@ public class BSP_MapGen : MonoBehaviour {
         costModList.Add(2, 10);
         AstarPathfinder pathfinder = new AstarPathfinder(Map, costModList, impassableList);
 
+        // Pick random Room
+        // Pick Random tile in that room
+        Vector2Int Entrance = GetRandomPointInRoom(BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)]);
+        // Assign 'Entrance' to that tile
+
         // loop through all Segments
         for (int i = 0; i < BSPMap[0][0].Count; i++)
         {
-            for (int j = 0; j < BSPMap[0][0].Count; j++)
-            {
-                // Nothting to doo if i and j both point to the same segment
-                if (i == j)
-                    continue;
-
-                Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][i]);
-                Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][j]);                
+            // Ensure there is a path from the entrance to each room
+            Vector2Int startNode = Entrance;
+            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][i]);                
                 
-                List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
-                foreach (var node in path)
-                {
-                    Map[node.xPos, node.yPos] = 2;
-                }
-            }          
+            List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
+            foreach (var node in path)
+            {
+                Map[node.xPos, node.yPos] = 2;
+            }
         }
     }
 
