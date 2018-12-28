@@ -37,9 +37,15 @@ public class BSP_MapGen : MonoBehaviour {
 
     // Map
     public Sprite sampleFloor;
+    public Sprite sampleEntranceTile;
+    public Sprite sampleExitTile;
     public Sprite sampleDoor;
     public Sprite sampleWall;
     int[,] Map;
+
+    // Entrance/Exit
+    Vector2Int Entrance;
+    Vector2Int Exit;
 
     float drawCounter = 0;
     float counterTimeOut = 2.0f;
@@ -401,6 +407,8 @@ public class BSP_MapGen : MonoBehaviour {
         costModList.Add(0, 40);
         costModList.Add(1, 10);
         costModList.Add(2, 10);
+        costModList.Add(3, 10);
+        costModList.Add(4, 10);
         AstarPathfinder pathfinder = new AstarPathfinder(Map, costModList, impassableList);
         // loop through randomly selected segments
         for (int i = 0; i < segmentIndices.Count; i += 2)
@@ -413,7 +421,7 @@ public class BSP_MapGen : MonoBehaviour {
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
             {
-                Map[node.xPos, node.yPos] = 2;
+                Map[node.xPos, node.yPos] = 1;
             }
 
         }
@@ -426,13 +434,17 @@ public class BSP_MapGen : MonoBehaviour {
         costModList.Add(0, 1000);
         costModList.Add(1, 10);
         costModList.Add(2, 10);
+        costModList.Add(3, 10);
+        costModList.Add(4, 10);
         AstarPathfinder pathfinder = new AstarPathfinder(Map, costModList, impassableList);
 
         // Pick random Room
         // Pick Random tile in that room
-        Vector2Int Entrance = GetRandomPointInRoom(BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)]);
+        Entrance = GetRandomPointInRoom(BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)]);
         // Assign 'Entrance' to that tile
+        Map[Entrance.x, Entrance.y] = 3;
 
+        int longestPathLength = 0;
         // loop through all Segments
         for (int i = 0; i < BSPMap[0][0].Count; i++)
         {
@@ -443,9 +455,19 @@ public class BSP_MapGen : MonoBehaviour {
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
             {
-                Map[node.xPos, node.yPos] = 2;
+                if (Map[node.xPos, node.yPos] == 0)
+                    Map[node.xPos, node.yPos] = 1;
+            }
+            if (path.Count > longestPathLength)
+            {
+                longestPathLength = path.Count;
+                // The Exit tile is replaced with the new longestPath target - temp level exit placement  
+                Exit = new Vector2Int(targetNode.x, targetNode.y);
             }
         }
+
+        // Use longest path from 2nd pass to place Exit stairs
+        Map[Exit.x, Exit.y] = 4;
     }
 
     private Vector2Int GetRandomPointInRoom(Segment segment)
@@ -472,6 +494,10 @@ public class BSP_MapGen : MonoBehaviour {
                     tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
                 else if (Map[x, y] == 2)
                     tile.AddComponent<SpriteRenderer>().sprite = sampleDoor;
+                else if (Map[x, y] == 3)
+                    tile.AddComponent<SpriteRenderer>().sprite = sampleEntranceTile;
+                else if (Map[x, y] == 4)
+                    tile.AddComponent<SpriteRenderer>().sprite = sampleExitTile;
             }
         }
     }
