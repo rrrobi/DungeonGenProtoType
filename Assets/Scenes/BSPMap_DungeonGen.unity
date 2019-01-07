@@ -256,6 +256,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampleFloor: {fileID: 21300000, guid: 9735b0857bcd02f44beac99472409781, type: 3}
+  sampleEntranceTile: {fileID: 21300000, guid: c1184e7a2b0304c4ba1b86aa96c487b1, type: 3}
+  sampleExitTile: {fileID: 21300000, guid: c74e6ea20694fb84ca679bdf3222211e, type: 3}
   sampleDoor: {fileID: 21300000, guid: ca7479dc703954c49bf672ad4eb008e7, type: 3}
   sampleWall: {fileID: 21300000, guid: 0ab6546fae2056543af0ef9342d83062, type: 3}
 --- !u!4 &324377965
