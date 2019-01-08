@@ -8,10 +8,10 @@ public class BSP_MapGen : MonoBehaviour {
     public struct Segment
     {
         // Pos = centre
-        public float xPos;
-        public float yPos;
-        public float width;
-        public float height;
+        public int xPos;
+        public int yPos;
+        public int width;
+        public int height;
 
         public string segmentKey;
         public Room segmentRoom;
@@ -23,13 +23,22 @@ public class BSP_MapGen : MonoBehaviour {
         public int roomHeight;
         public int roomLeft;
         public int roomBottom;
+        public RoomCache roomCache;
 
         public List<Vector2Int> roomDoors;
     }
 
+    public struct RoomCache
+    {
+        public Vector2Int position;
+        // List of guardians
+        // list of loot
+        // othe info etc
+    }
+
     List<List<List<Segment>>> BSPMap = new List<List<List<Segment>>>();
-    const float MAP_WIDTH = 50.0f;
-    const float MAP_HEIGHT = 30.0f;
+    const int MAP_WIDTH = 50;
+    const int MAP_HEIGHT = 30;
     const float MAX_DIVIDE_RATIO = 0.70f;
     const float MIN_DIVIDE_RATION = 0.30f;
 
@@ -95,8 +104,8 @@ public class BSP_MapGen : MonoBehaviour {
         {
             new Segment
             {
-                xPos = 0.0f,
-                yPos = 0.0f,
+                xPos = 0,
+                yPos = 0,
                 width = MAP_WIDTH,
                 height = MAP_HEIGHT,
 
@@ -190,6 +199,10 @@ public class BSP_MapGen : MonoBehaviour {
         float seg1Ratio = RandomRatio();
         float seg2Ratio = 1.0f - seg1Ratio;
 
+        int min = 4; // min room size (2) + wall on either side (1+1)
+        int i_Seg1Width = Mathf.Clamp((int)(input.width * seg1Ratio), min, input.width - 4);
+        int i_Seg2Width = (int)input.width - i_Seg1Width;
+
         Segment segment1 = new Segment()
         {
             // center of new Left segment = 
@@ -204,7 +217,7 @@ public class BSP_MapGen : MonoBehaviour {
             // yPos stays the same
             xPos = input.xPos,
             yPos = input.yPos,
-            width = input.width * seg1Ratio,
+            width = i_Seg1Width,// input.width * seg1Ratio,
             height = input.height
         };
         output.Add(new List<Segment>() { segment1 });
@@ -220,9 +233,9 @@ public class BSP_MapGen : MonoBehaviour {
             // Bottom left of new Right Segment = 
             // xPos = + width of left segment
             // yPos stays the same
-            xPos = input.xPos + input.width * seg1Ratio,
+            xPos = input.xPos + i_Seg1Width,
             yPos = input.yPos,
-            width = input.width * seg2Ratio,
+            width = i_Seg2Width,
             height = input.height
         };
         output.Add(new List<Segment>() { segment2 });
@@ -237,6 +250,10 @@ public class BSP_MapGen : MonoBehaviour {
         float seg1Ratio = RandomRatio();
         float seg2Ratio = 1.0f - seg1Ratio;
 
+        int min = 4; // min room size (2) + wall on either side (1+1)
+        int i_Seg1Height = Mathf.Clamp((int)(input.height * seg1Ratio), min, input.height - min);
+        int i_Seg2Height = (int)input.height - i_Seg1Height;
+
         Segment segment1 = new Segment()
         {
             // center of new Top segment = 
@@ -250,9 +267,9 @@ public class BSP_MapGen : MonoBehaviour {
             // xPos stays the same
             // ypos = +height of BOTTOM segement
             xPos = input.xPos,
-            yPos = input.yPos + input.height * seg2Ratio,
+            yPos = input.yPos + i_Seg2Height,
             width = input.width,
-            height = input.height * seg1Ratio,
+            height = i_Seg1Height,
 
         };
         output.Add(new List<Segment>() { segment1 });
@@ -271,7 +288,7 @@ public class BSP_MapGen : MonoBehaviour {
             xPos = input.xPos,
             yPos = input.yPos,
             width = input.width,
-            height = input.height * seg2Ratio
+            height = i_Seg2Height,//input.height * seg2Ratio
         };
         output.Add(new List<Segment>() { segment2 });
 
@@ -286,10 +303,10 @@ public class BSP_MapGen : MonoBehaviour {
     private List<Segment> FillSegmentList(Segment region)
     {
         List<Segment> output = new List<Segment>();
-        float regionLeft = region.xPos;// - region.width / 2;
-        float regionRight = region.xPos + region.width;// / 2;
-        float regionTop = region.yPos + region.height;// / 2;
-        float regionBottom = region.yPos;// - region.height / 2;
+        int regionLeft = region.xPos;// - region.width / 2;
+        int regionRight = region.xPos + region.width;// / 2;
+        int regionTop = region.yPos + region.height;// / 2;
+        int regionBottom = region.yPos;// - region.height / 2;
 
         // For each segment created in the map
         
@@ -366,11 +383,14 @@ public class BSP_MapGen : MonoBehaviour {
 
         // Get random room size
         Room room = new Room();
-        room.roomWidth = UnityEngine.Random.Range(2, (int)segment.width - 1);
-        room.roomHeight = UnityEngine.Random.Range(2, (int)segment.height - 1);
+        room.roomWidth = UnityEngine.Random.Range(2, segment.width - 1);
+        room.roomHeight = UnityEngine.Random.Range(2, segment.height - 1);
         // Get random room start pos - 
-        room.roomLeft = UnityEngine.Random.Range(left + 1, left + (int)segment.width - (room.roomWidth + 1));
-        room.roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + (int)segment.height - (room.roomHeight + 1));
+        room.roomLeft = UnityEngine.Random.Range(left + 1, left + segment.width - (room.roomWidth + 1));
+        room.roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + segment.height - (room.roomHeight + 1));
+        // Place cache in room
+        // TODO...
+        
         segment.segmentRoom = room;
 
         // Adjust tile map array to include new room
@@ -524,7 +544,7 @@ public class BSP_MapGen : MonoBehaviour {
             foreach (var segment in segList)
             {
                 DrawSegment(segment);
-
+                DrawRoom(segment);
             }
         }
     }
@@ -540,5 +560,18 @@ public class BSP_MapGen : MonoBehaviour {
         Debug.DrawLine(topRight, bottomRight);
         Debug.DrawLine(bottomRight, bottomLeft);
         Debug.DrawLine(bottomLeft, topLeft);
+    }
+
+    private void DrawRoom(Segment input)
+    {
+        Vector3 topLeft = new Vector3(input.segmentRoom.roomLeft, input.segmentRoom.roomBottom + input.segmentRoom.roomHeight, 0.0f);
+        Vector3 topRight = new Vector3(input.segmentRoom.roomLeft + input.segmentRoom.roomWidth, input.segmentRoom.roomBottom + input.segmentRoom.roomHeight, 0.0f);
+        Vector3 bottomLeft = new Vector3(input.segmentRoom.roomLeft, input.segmentRoom.roomBottom, 0.0f);
+        Vector3 bottomRight = new Vector3(input.segmentRoom.roomLeft + input.segmentRoom.roomWidth, input.segmentRoom.roomBottom, 0.0f);
+
+        Debug.DrawLine(topLeft, topRight, Color.green);
+        Debug.DrawLine(topRight, bottomRight, Color.green);
+        Debug.DrawLine(bottomRight, bottomLeft, Color.green);
+        Debug.DrawLine(bottomLeft, topLeft, Color.green);
     }
 }
