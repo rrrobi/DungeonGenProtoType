@@ -48,7 +48,7 @@ public class BSP_MapGen : MonoBehaviour {
     public Sprite sampleFloor;
     public Sprite sampleEntranceTile;
     public Sprite sampleExitTile;
-    public Sprite sampleDoor;
+    public Sprite sampleCache;
     public Sprite sampleWall;
     int[,] Map;
 
@@ -348,6 +348,7 @@ public class BSP_MapGen : MonoBehaviour {
             }
         }
 
+        DateTime beforeRooms = DateTime.Now;
         // For each segment, make a randomly sized room (which fits within that segment)
         // Update the Map with the new rooms
         for (int i = 0; i < BSPMap[0][0].Count; i++)
@@ -356,16 +357,27 @@ public class BSP_MapGen : MonoBehaviour {
             // unsure why I was unable to simply amend the 'Room' property
             BSPMap[0][0][i] = BuildRoomInSegment(BSPMap[0][0][i]);            
         }
+        DateTime afterRooms = DateTime.Now;
+        TimeSpan durationRooms = afterRooms.Subtract(beforeRooms);
+        Debug.Log("Time taken to generate Rooms: " + durationRooms);
 
+        DateTime before1stPass = DateTime.Now;
         // Take subset of total rooms (even number)
         // Pair them up, find pathbetween them
         // Weight tiles, 1 floor - 4ish wall, will prefer to cut through existing rooms, but still can cut new tunnels
         FirstPassCorridorCreation();
+        DateTime after1stPass = DateTime.Now;
+        TimeSpan duration1stPass = after1stPass.Subtract(before1stPass);
+        Debug.Log("Time taken for 1st corridor pass: " + duration1stPass);
 
+        DateTime before2ndPass = DateTime.Now;
         // Place Entrance in on random tile in random room
         // Check it has a path to every other room
         // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
         SecondPassCorridorCreation(); //<-- Still working on this
+        DateTime after2ndPass = DateTime.Now;
+        TimeSpan duration2ndPass = after2ndPass.Subtract(before2ndPass);
+        Debug.Log("Time taken for 2nd corridor pass: " + duration2ndPass);
 
         DrawMap();
     }
@@ -389,7 +401,7 @@ public class BSP_MapGen : MonoBehaviour {
         room.roomLeft = UnityEngine.Random.Range(left + 1, left + segment.width - (room.roomWidth + 1));
         room.roomBottom = UnityEngine.Random.Range(bottom + 1, bottom + segment.height - (room.roomHeight + 1));
         // Place cache in room
-        // TODO...
+        room.roomCache.position = GetRandomPointInRoom(room);
         
         segment.segmentRoom = room;
 
@@ -401,6 +413,8 @@ public class BSP_MapGen : MonoBehaviour {
                 Map[x, y] = 1;
             }
         }
+        // Adjust tile map array to include cache
+        Map[room.roomCache.position.x, room.roomCache.position.y] = 2;
 
         return segment;
     }
@@ -434,9 +448,9 @@ public class BSP_MapGen : MonoBehaviour {
         for (int i = 0; i < segmentIndices.Count; i += 2)
         {
             // Start node will be in BSPMap[0][0][i]
-            Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i]]);
+            Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i]].segmentRoom);
             // Target node will be in BSPMap[0][0][i + 1]
-            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i+1]]);            
+            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i+1]].segmentRoom);            
             
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
@@ -460,7 +474,7 @@ public class BSP_MapGen : MonoBehaviour {
 
         // Pick random Room
         // Pick Random tile in that room
-        Entrance = GetRandomPointInRoom(BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)]);
+        Entrance = GetRandomPointInRoom(BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)].segmentRoom);
         // Assign 'Entrance' to that tile
         Map[Entrance.x, Entrance.y] = 3;
 
@@ -470,7 +484,7 @@ public class BSP_MapGen : MonoBehaviour {
         {
             // Ensure there is a path from the entrance to each room
             Vector2Int startNode = Entrance;
-            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][i]);                
+            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][i].segmentRoom);                
                 
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
@@ -490,11 +504,11 @@ public class BSP_MapGen : MonoBehaviour {
         Map[Exit.x, Exit.y] = 4;
     }
 
-    private Vector2Int GetRandomPointInRoom(Segment segment)
+    private Vector2Int GetRandomPointInRoom(Room room)
     {
         Vector2Int output = new Vector2Int();
-        output.x = UnityEngine.Random.Range(segment.segmentRoom.roomLeft, segment.segmentRoom.roomLeft + segment.segmentRoom.roomWidth);
-        output.y = UnityEngine.Random.Range(segment.segmentRoom.roomBottom, segment.segmentRoom.roomBottom + segment.segmentRoom.roomHeight);
+        output.x = UnityEngine.Random.Range(room.roomLeft, room.roomLeft + room.roomWidth);
+        output.y = UnityEngine.Random.Range(room.roomBottom, room.roomBottom + room.roomHeight);
 
         return output;
     }
@@ -513,7 +527,7 @@ public class BSP_MapGen : MonoBehaviour {
                 else if (Map[x,y] == 1)
                     tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
                 else if (Map[x, y] == 2)
-                    tile.AddComponent<SpriteRenderer>().sprite = sampleDoor;
+                    tile.AddComponent<SpriteRenderer>().sprite = sampleCache;
                 else if (Map[x, y] == 3)
                     tile.AddComponent<SpriteRenderer>().sprite = sampleEntranceTile;
                 else if (Map[x, y] == 4)
