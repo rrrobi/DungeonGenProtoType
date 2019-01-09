@@ -182,16 +182,6 @@ public class BSP_MapGen : MonoBehaviour {
         Debug.Log("Time taken to generate BSP map (ms): " + duration);
     }
 
-    private string GetNewKey(string inputKey)
-    {
-        string output = string.Empty;
-
-        // If input is base, 
-
-
-        return output;
-    }
-
     private List<List<Segment>> SplitSegmentVertical(Segment input)
     {
         List<List<Segment>> output = new List<List<Segment>>();
@@ -205,13 +195,6 @@ public class BSP_MapGen : MonoBehaviour {
 
         Segment segment1 = new Segment()
         {
-            // center of new Left segment = 
-            // original center  
-            // -Half Width  
-            // +Half Ratio of original Full Width
-            //xPos = input.xPos - (input.width / 2) + (input.width * (seg1Ratio / 2)),
-            //yPos = input.yPos,
-
             // Bottom left of new Left Segment = 
             // xPos stays the same
             // yPos stays the same
@@ -223,13 +206,6 @@ public class BSP_MapGen : MonoBehaviour {
         output.Add(new List<Segment>() { segment1 });
         Segment segment2 = new Segment()
         {
-            // center of new Right segment = 
-            // original center  
-            // +Half Width  
-            // -Half Ratio of original Full Width
-            ////xPos = input.xPos + (input.width / 2) - (input.width * (seg2Ratio / 2)),
-            ////yPos = input.yPos,
-
             // Bottom left of new Right Segment = 
             // xPos = + width of left segment
             // yPos stays the same
@@ -256,13 +232,6 @@ public class BSP_MapGen : MonoBehaviour {
 
         Segment segment1 = new Segment()
         {
-            // center of new Top segment = 
-            // original center  
-            // +Half Hieght  
-            // -Half Ratio of original Full Hieght
-            //xPos = input.xPos,
-            //yPos = input.yPos + (input.height / 2) - (input.height * (seg1Ratio / 2)),
-
             // Bottom left of top segment = 
             // xPos stays the same
             // ypos = +height of BOTTOM segement
@@ -275,13 +244,6 @@ public class BSP_MapGen : MonoBehaviour {
         output.Add(new List<Segment>() { segment1 });
         Segment segment2 = new Segment()
         {
-            // center of new Bottom segment = 
-            // original center  
-            // -Half Hieght  
-            // +Half Ratio of original Full Hieght
-            //xPos = input.xPos,
-            //yPos = input.yPos - (input.height / 2) + (input.height * (seg2Ratio / 2)),
-
             // Bottom Left of Bottom segment = 
             // xPos stays the same
             // yPos stays the same
@@ -455,7 +417,10 @@ public class BSP_MapGen : MonoBehaviour {
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
             {
-                Map[node.xPos, node.yPos] = 1;
+                // If the path passes through walls
+                // change walls to floor tiles
+                if (Map[node.xPos, node.yPos] == 2)
+                    Map[node.xPos, node.yPos] = 1;
             }
 
         }
@@ -489,6 +454,8 @@ public class BSP_MapGen : MonoBehaviour {
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
             {
+                // If the path passes through walls
+                // change walls to floor tiles
                 if (Map[node.xPos, node.yPos] == 0)
                     Map[node.xPos, node.yPos] = 1;
             }
