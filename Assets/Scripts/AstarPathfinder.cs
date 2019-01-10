@@ -272,6 +272,7 @@ public class AstarPathfinder
 
     #region pathfinder methods
 
+#warning The Found target bool is being overridden by later checks, for example if left is the target when it checks top, it will forget it has found the target - getting stuck in a loop
     void Find_Check_AddSurroundingNodesToOpenList(Node parent)
     {
         //  We are only interested in horizontal and virtical, NOT diagonal

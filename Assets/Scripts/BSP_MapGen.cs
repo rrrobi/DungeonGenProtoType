@@ -327,7 +327,7 @@ public class BSP_MapGen : MonoBehaviour {
         // Take subset of total rooms (even number)
         // Pair them up, find pathbetween them
         // Weight tiles, 1 floor - 4ish wall, will prefer to cut through existing rooms, but still can cut new tunnels
-        FirstPassCorridorCreation();
+//        FirstPassCorridorCreation();
         DateTime after1stPass = DateTime.Now;
         TimeSpan duration1stPass = after1stPass.Subtract(before1stPass);
         Debug.Log("Time taken for 1st corridor pass: " + duration1stPass);
@@ -336,7 +336,7 @@ public class BSP_MapGen : MonoBehaviour {
         // Place Entrance in on random tile in random room
         // Check it has a path to every other room
         // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
-        SecondPassCorridorCreation(); //<-- Still working on this
+        SecondPassCorridorCreation(); 
         DateTime after2ndPass = DateTime.Now;
         TimeSpan duration2ndPass = after2ndPass.Subtract(before2ndPass);
         Debug.Log("Time taken for 2nd corridor pass: " + duration2ndPass);
@@ -410,16 +410,16 @@ public class BSP_MapGen : MonoBehaviour {
         for (int i = 0; i < segmentIndices.Count; i += 2)
         {
             // Start node will be in BSPMap[0][0][i]
-            Vector2Int startNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i]].segmentRoom);
+            Vector2Int startNode = BSPMap[0][0][segmentIndices[i]].segmentRoom.roomCache.position;// GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i]].segmentRoom);
             // Target node will be in BSPMap[0][0][i + 1]
-            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i+1]].segmentRoom);            
+            Vector2Int targetNode = BSPMap[0][0][segmentIndices[i + 1]].segmentRoom.roomCache.position;// GetRandomPointInRoom(BSPMap[0][0][segmentIndices[i+1]].segmentRoom);            
             
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
             {
                 // If the path passes through walls
                 // change walls to floor tiles
-                if (Map[node.xPos, node.yPos] == 2)
+                if (Map[node.xPos, node.yPos] == 0)
                     Map[node.xPos, node.yPos] = 1;
             }
 
@@ -439,7 +439,7 @@ public class BSP_MapGen : MonoBehaviour {
 
         // Pick random Room
         // Pick Random tile in that room
-        Entrance = GetRandomPointInRoom(BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)].segmentRoom);
+        Entrance = BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)].segmentRoom.roomCache.position;// GetRandomPointInRoom(BSPMap[0][0][UnityEngine.Random.Range(0, BSPMap[0][0].Count)].segmentRoom);
         // Assign 'Entrance' to that tile
         Map[Entrance.x, Entrance.y] = 3;
 
@@ -449,7 +449,7 @@ public class BSP_MapGen : MonoBehaviour {
         {
             // Ensure there is a path from the entrance to each room
             Vector2Int startNode = Entrance;
-            Vector2Int targetNode = GetRandomPointInRoom(BSPMap[0][0][i].segmentRoom);                
+            Vector2Int targetNode = BSPMap[0][0][i].segmentRoom.roomCache.position;// GetRandomPointInRoom(BSPMap[0][0][i].segmentRoom);                
                 
             List<Node> path = pathfinder.StartPathfinder(startNode, targetNode);
             foreach (var node in path)
