@@ -231,48 +231,8 @@ public class AstarPathfinder
         return path;
     }
 
-    //private void DrawMap()
-    //{
-    //    for (int x = 0; x < MAP_WIDTH; x++)
-    //    {
-    //        for (int y = 0; y < MAP_HEIGHT; y++)
-    //        {
-    //            GameObject tile;
-    //            string name = "Tile_" + x + "_" + y;
-    //            if (GameObject.Find(name) == null)
-    //            {
-    //                tile = new GameObject();
-    //                tile.name = name;
-    //                tile.transform.position = new Vector3(x, y);
-    //                tile.AddComponent<BoxCollider2D>().offset = new Vector2(0.5f, 0.5f);
-    //                if (Map[x, y] == 0)
-    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleWall;
-    //                if (Map[x, y] == 1)
-    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
-    //                if (Map[x, y] == 2)
-    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleBlueFloor;
-    //                if (Map[x, y] == 3)
-    //                    tile.AddComponent<SpriteRenderer>().sprite = sampleGreenFloor;
-    //            }
-    //            else
-    //            {
-    //                tile = GameObject.Find(name);
-    //                if (Map[x, y] == 0)
-    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleWall;
-    //                if (Map[x, y] == 1)
-    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleFloor;
-    //                if (Map[x, y] == 2)
-    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleBlueFloor;
-    //                if (Map[x, y] == 3)
-    //                    tile.GetComponent<SpriteRenderer>().sprite = sampleGreenFloor;
-    //            }
-    //        }
-    //    }
-    //}
-
     #region pathfinder methods
 
-#warning The Found target bool is being overridden by later checks, for example if left is the target when it checks top, it will forget it has found the target - getting stuck in a loop
     void Find_Check_AddSurroundingNodesToOpenList(Node parent)
     {
         //  We are only interested in horizontal and virtical, NOT diagonal
@@ -289,7 +249,9 @@ public class AstarPathfinder
         {
             newNode = new Node(newX, newY, TargetNode, CostModList[Map[newX, newY]], parent);
             if (CheckNode(newNode))
-            { foundTarget = true; }
+            {
+                foundTarget = true;
+            }
         }
         // Check Right
         ///////////////

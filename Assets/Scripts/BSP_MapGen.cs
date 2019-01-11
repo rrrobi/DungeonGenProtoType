@@ -63,9 +63,28 @@ public class BSP_MapGen : MonoBehaviour {
     // Use this for initialization
     void Start ()
     {
-        MapGen();
+       // MapGen();
 	}
+
+    public void StartMapGen()
+    {
+        ResetMapGen();
+        MapGen();
+    }
 	
+    private void ResetMapGen()
+    {
+        // Reset Map
+        Map = new int[(int)MAP_WIDTH, (int)MAP_HEIGHT];
+        for (int x = 0; x < MAP_WIDTH; x++)
+        {
+            for (int y = 0; y < MAP_HEIGHT; y++)
+            {
+                Map[x, y] = 0;
+            }
+        }
+    }
+
     void MapGen()
     {
         DateTime before = DateTime.Now;
@@ -336,7 +355,7 @@ public class BSP_MapGen : MonoBehaviour {
         // Place Entrance in on random tile in random room
         // Check it has a path to every other room
         // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
-        SecondPassCorridorCreation(); 
+//        SecondPassCorridorCreation(); 
         DateTime after2ndPass = DateTime.Now;
         TimeSpan duration2ndPass = after2ndPass.Subtract(before2ndPass);
         Debug.Log("Time taken for 2nd corridor pass: " + duration2ndPass);
@@ -486,19 +505,38 @@ public class BSP_MapGen : MonoBehaviour {
         {
             for (int y = 0; y < MAP_HEIGHT; y++)
             {
-                GameObject tile = new GameObject();
-                tile.name = "Tile_" + x + "_" + y;
-                tile.transform.position = new Vector3(x, y);
-                if (Map[x, y] == 0)
-                    tile.AddComponent<SpriteRenderer>().sprite = sampleWall;
-                else if (Map[x,y] == 1)
-                    tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
-                else if (Map[x, y] == 2)
-                    tile.AddComponent<SpriteRenderer>().sprite = sampleCache;
-                else if (Map[x, y] == 3)
-                    tile.AddComponent<SpriteRenderer>().sprite = sampleEntranceTile;
-                else if (Map[x, y] == 4)
-                    tile.AddComponent<SpriteRenderer>().sprite = sampleExitTile;
+                GameObject tile;
+                string name = "Tile_" + x + "_" + y;
+                if (GameObject.Find(name) == null)
+                {
+                    tile = new GameObject();
+                    tile.name = name;
+                    tile.transform.position = new Vector3(x, y);
+                    if (Map[x, y] == 0)
+                        tile.AddComponent<SpriteRenderer>().sprite = sampleWall;
+                    else if (Map[x, y] == 1)
+                        tile.AddComponent<SpriteRenderer>().sprite = sampleFloor;
+                    else if (Map[x, y] == 2)
+                        tile.AddComponent<SpriteRenderer>().sprite = sampleCache;
+                    else if (Map[x, y] == 3)
+                        tile.AddComponent<SpriteRenderer>().sprite = sampleEntranceTile;
+                    else if (Map[x, y] == 4)
+                        tile.AddComponent<SpriteRenderer>().sprite = sampleExitTile;
+                }
+                else
+                {
+                    tile = GameObject.Find(name);
+                    if (Map[x, y] == 0)
+                        tile.GetComponent<SpriteRenderer>().sprite = sampleWall;
+                    else if (Map[x, y] == 1)
+                        tile.GetComponent<SpriteRenderer>().sprite = sampleFloor;
+                    else if (Map[x, y] == 2)
+                        tile.GetComponent<SpriteRenderer>().sprite = sampleCache;
+                    else if (Map[x, y] == 3)
+                        tile.GetComponent<SpriteRenderer>().sprite = sampleEntranceTile;
+                    else if (Map[x, y] == 4)
+                        tile.GetComponent<SpriteRenderer>().sprite = sampleExitTile;
+                }
             }
         }
     }
@@ -520,14 +558,14 @@ public class BSP_MapGen : MonoBehaviour {
         }
 
 
-        foreach (var segList in BSPMap[0])
-        {
-            foreach (var segment in segList)
-            {
-                DrawSegment(segment);
-                DrawRoom(segment);
-            }
-        }
+        //foreach (var segList in BSPMap[0])
+        //{
+        //    foreach (var segment in segList)
+        //    {
+        //        DrawSegment(segment);
+        //        DrawRoom(segment);
+        //    }
+        //}
     }
 
     private void DrawSegment(Segment input)
