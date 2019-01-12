@@ -206,7 +206,7 @@ public class BSP_MapGen : MonoBehaviour {
         List<List<Segment>> output = new List<List<Segment>>();
 
         float seg1Ratio = RandomRatio();
-        float seg2Ratio = 1.0f - seg1Ratio;
+        //float seg2Ratio = 1.0f - seg1Ratio;
 
         int min = 4; // min room size (2) + wall on either side (1+1)
         int i_Seg1Width = Mathf.Clamp((int)(input.width * seg1Ratio), min, input.width - 4);
@@ -243,7 +243,7 @@ public class BSP_MapGen : MonoBehaviour {
         List<List<Segment>> output = new List<List<Segment>>();
 
         float seg1Ratio = RandomRatio();
-        float seg2Ratio = 1.0f - seg1Ratio;
+        //float seg2Ratio = 1.0f - seg1Ratio;
 
         int min = 4; // min room size (2) + wall on either side (1+1)
         int i_Seg1Height = Mathf.Clamp((int)(input.height * seg1Ratio), min, input.height - min);
@@ -346,7 +346,7 @@ public class BSP_MapGen : MonoBehaviour {
         // Take subset of total rooms (even number)
         // Pair them up, find pathbetween them
         // Weight tiles, 1 floor - 4ish wall, will prefer to cut through existing rooms, but still can cut new tunnels
-//        FirstPassCorridorCreation();
+        FirstPassCorridorCreation();
         DateTime after1stPass = DateTime.Now;
         TimeSpan duration1stPass = after1stPass.Subtract(before1stPass);
         Debug.Log("Time taken for 1st corridor pass: " + duration1stPass);
@@ -355,7 +355,7 @@ public class BSP_MapGen : MonoBehaviour {
         // Place Entrance in on random tile in random room
         // Check it has a path to every other room
         // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
-//        SecondPassCorridorCreation(); 
+        SecondPassCorridorCreation(); 
         DateTime after2ndPass = DateTime.Now;
         TimeSpan duration2ndPass = after2ndPass.Subtract(before2ndPass);
         Debug.Log("Time taken for 2nd corridor pass: " + duration2ndPass);
@@ -407,15 +407,7 @@ public class BSP_MapGen : MonoBehaviour {
         // Make sure it is a even number
         List<int> segmentIndices = new List<int>();
         int maxIndex = BSPMap[0][0].Count;
-        while (segmentIndices.Count < (BSPMap[0][0].Count) ||
-            segmentIndices.Count % 2 != 0)
-        {
-            int index = UnityEngine.Random.Range(0, maxIndex);
-            if (!segmentIndices.Contains(index))
-            {
-                segmentIndices.Add(index);
-            }
-        }
+        segmentIndices = GetRandomIndexList(maxIndex, BSPMap[0][0].Count);
 
         List<int> impassableList = new List<int>();
         Dictionary<int, int> costModList = new Dictionary<int, int>();
@@ -443,6 +435,30 @@ public class BSP_MapGen : MonoBehaviour {
             }
 
         }
+    }
+
+    private List<int> GetRandomIndexList(int maxIndex, int countRequired)
+    {
+        List<int> indexList = new List<int>();
+        if (countRequired > maxIndex)
+        {
+            Debug.LogError("GetRandomIndexList has been passed incorrect values. maxIndex: " + maxIndex + " countRequired: " + countRequired);
+        }
+
+        List<int> tempList = new List<int>();
+        for (int i = 0; i < maxIndex; i++)
+        {
+            tempList.Add(i);
+        }
+
+        for (int i = 0; i < countRequired; i++)
+        {
+            int index = tempList[UnityEngine.Random.Range(0, tempList.Count)];
+            indexList.Add(index);
+            tempList.Remove(index);
+        }        
+
+        return indexList;
     }
 
     private void SecondPassCorridorCreation()
