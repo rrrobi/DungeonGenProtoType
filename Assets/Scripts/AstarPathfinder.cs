@@ -87,7 +87,7 @@ public class AstarPathfinder
 
 
     // Control variables
-    bool isSetTarget = false;
+    //bool isSetTarget = false;
 
     public AstarPathfinder(int[,] map, 
         Dictionary<int, int> costModList, List<int> impassable)

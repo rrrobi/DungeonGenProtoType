@@ -58,7 +58,12 @@ public class BSP_MapGen : MonoBehaviour {
 
     float drawCounter = 0;
     float counterTimeOut = 2.0f;
-  //  int drawIndex = 0;
+
+    // Display flags
+    bool displayBSPPartitions = false;
+    bool displayRooms = false;
+    bool displayCorridor1stPass = false;
+    bool displayCorridor2ndPass = false;
 
     // Use this for initialization
     void Start ()
@@ -69,11 +74,43 @@ public class BSP_MapGen : MonoBehaviour {
     public void StartMapGen()
     {
         ResetMapGen();
+        ResetDisplayFlags();
         MapGen();
+        displayBSPPartitions = true;
+    }
+
+    public void NextStage()
+    {
+        if (displayBSPPartitions &&
+            !displayRooms)
+        {
+            BuildTileMap();
+            DrawMap();
+            displayRooms = true;
+        }
+        else if (displayRooms &&
+            !displayCorridor1stPass)
+        {
+            FirstPassCorridors();
+            DrawMap();
+            displayCorridor1stPass = true;
+        }
+        else if (displayCorridor1stPass &&
+            !displayCorridor2ndPass)
+        {
+            SecondPassCorridors();
+            DrawMap();
+            displayCorridor2ndPass = true;
+        }
+        else
+        {
+            Debug.Log("Hmmm.... it should all be displaying right now....");
+        }
     }
 	
     private void ResetMapGen()
     {
+        UnDrawMap();
         // Reset Map
         Map = new int[(int)MAP_WIDTH, (int)MAP_HEIGHT];
         for (int x = 0; x < MAP_WIDTH; x++)
@@ -83,6 +120,14 @@ public class BSP_MapGen : MonoBehaviour {
                 Map[x, y] = 0;
             }
         }
+    }
+
+    private void ResetDisplayFlags()
+    {
+        displayBSPPartitions = false;
+        displayRooms = false;
+        displayCorridor1stPass = false;
+        displayCorridor2ndPass = false;
     }
 
     void MapGen()
@@ -193,8 +238,7 @@ public class BSP_MapGen : MonoBehaviour {
         BSPMap.RemoveAt(BSPMap.Count - 1);
 
 
-        BuildTileMap();
-
+        //BuildTileMap();
 
         DateTime after = DateTime.Now;
         TimeSpan duration = after.Subtract(before);
@@ -342,6 +386,29 @@ public class BSP_MapGen : MonoBehaviour {
         TimeSpan durationRooms = afterRooms.Subtract(beforeRooms);
         Debug.Log("Time taken to generate Rooms: " + durationRooms);
 
+        //DateTime before1stPass = DateTime.Now;
+        //// Take subset of total rooms (even number)
+        //// Pair them up, find pathbetween them
+        //// Weight tiles, 1 floor - 4ish wall, will prefer to cut through existing rooms, but still can cut new tunnels
+        //FirstPassCorridorCreation();
+        //DateTime after1stPass = DateTime.Now;
+        //TimeSpan duration1stPass = after1stPass.Subtract(before1stPass);
+        //Debug.Log("Time taken for 1st corridor pass: " + duration1stPass);
+
+        //DateTime before2ndPass = DateTime.Now;
+        //// Place Entrance in on random tile in random room
+        //// Check it has a path to every other room
+        //// this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
+        //SecondPassCorridorCreation(); 
+        //DateTime after2ndPass = DateTime.Now;
+        //TimeSpan duration2ndPass = after2ndPass.Subtract(before2ndPass);
+        //Debug.Log("Time taken for 2nd corridor pass: " + duration2ndPass);
+
+        //DrawMap();
+    }
+
+    private void FirstPassCorridors()
+    {
         DateTime before1stPass = DateTime.Now;
         // Take subset of total rooms (even number)
         // Pair them up, find pathbetween them
@@ -350,17 +417,18 @@ public class BSP_MapGen : MonoBehaviour {
         DateTime after1stPass = DateTime.Now;
         TimeSpan duration1stPass = after1stPass.Subtract(before1stPass);
         Debug.Log("Time taken for 1st corridor pass: " + duration1stPass);
+    }
 
+    private void SecondPassCorridors()
+    {
         DateTime before2ndPass = DateTime.Now;
         // Place Entrance in on random tile in random room
         // Check it has a path to every other room
         // this time weight something like 1 - 100 weights, so MUCH more likly to use existing paths where possible
-        SecondPassCorridorCreation(); 
+        SecondPassCorridorCreation();
         DateTime after2ndPass = DateTime.Now;
         TimeSpan duration2ndPass = after2ndPass.Subtract(before2ndPass);
         Debug.Log("Time taken for 2nd corridor pass: " + duration2ndPass);
-
-        DrawMap();
     }
 
     private Segment BuildRoomInSegment(Segment segment)
@@ -556,6 +624,25 @@ public class BSP_MapGen : MonoBehaviour {
             }
         }
     }
+
+    private void UnDrawMap()
+    {
+        for (int x = 0; x < MAP_WIDTH; x++)
+        {
+            for (int y = 0; y < MAP_HEIGHT; y++)
+            {
+                string name = "Tile_" + x + "_" + y;
+                if (GameObject.Find(name) == null)
+                {
+                    // nothing to do
+                }
+                else
+                {
+                    GameObject.Destroy(GameObject.Find(name));
+                }
+            }
+        }
+    }
     #endregion
 
     void Update()
@@ -573,15 +660,18 @@ public class BSP_MapGen : MonoBehaviour {
             //}
         }
 
-
-        //foreach (var segList in BSPMap[0])
-        //{
-        //    foreach (var segment in segList)
-        //    {
-        //        DrawSegment(segment);
-        //        DrawRoom(segment);
-        //    }
-        //}
+        if (displayBSPPartitions)
+        {
+            foreach (var segList in BSPMap[0])
+            {
+                foreach (var segment in segList)
+                {
+                    DrawSegment(segment);
+                    if (displayRooms)
+                        DrawRoom(segment);
+                }
+            }
+        }
     }
 
     private void DrawSegment(Segment input)
