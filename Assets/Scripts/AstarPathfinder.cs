@@ -138,7 +138,7 @@ public class AstarPathfinder
         BuildPath();
         DateTime afterPathTime = DateTime.Now;
         TimeSpan durationPath = afterPathTime.Subtract(beforePath);
-        Debug.Log("Time taken to generate Path: " + durationPath + ". Path Length: " + path.Count);
+        Debug.Log("Time taken to generate Path: " + durationPath + ". Path Length: " + path.Count + " ClosedList count: " + closedList.Count);
 
 
         return path;
@@ -292,9 +292,15 @@ public class AstarPathfinder
 
     bool CheckClosedListForNode(Node node)
     {
-        if (closedList.Contains(node))
-            return true;
-        else
+        foreach (var item in closedList)
+        {
+            if (item.Name == node.Name)
+                return true;
+        }
+
+       // if (closedList.Contains(node))
+       //     return true;
+        //else
             return false;
     }
 
